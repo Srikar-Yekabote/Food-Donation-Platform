@@ -2,11 +2,10 @@
 
 ## Overview
 
-The AI-Powered Food Donation & Redistribution Platform is a web-based solution designed to connect donors (individuals, restaurants, grocery stores) with food banks, shelters, and volunteers to reduce food waste and alleviate hunger in local communities. The platform leverages artificial intelligence to predict food expiry dates and matches donors with volunteers for pickups based on geolocation.
+The Food Donation & Redistribution Platform is a web-based solution designed to connect donors (individuals, restaurants, grocery stores) with food banks, shelters, and volunteers to reduce food waste and alleviate hunger in local communities. The platform leverages donors with volunteers for pickups based on geolocation.
 
 ## Key Features
 
-- **AI-Based Expiry Prediction**: Predicts food expiry dates to prioritize pickups.
 - **Geolocation Matching**: Connects donations to nearby food banks, shelters, and volunteers.
 - **Volunteer System**: Tracks pickup status (Pickup, In Transit, Delivered) and volunteer registration.
 - **Donation History**: Provides donors with a record of their contributions.
@@ -54,6 +53,43 @@ The AI-Powered Food Donation & Redistribution Platform is a web-based solution d
 
 - Prioritizes donations nearing expiry or marked urgent.
 - Alerts volunteers for faster processing.
+
+## Login and Register Page 
+
+### Login page
+![image](https://github.com/user-attachments/assets/ad4c0c69-a523-4721-a30b-683966ca759f)
+
+### Register page
+![image](https://github.com/user-attachments/assets/419e71e8-ffde-4ff3-b8ad-2acfe2eadcfc)
+
+## Donor Page
+
+
+
+### Donor Dashboard 
+![image](https://github.com/user-attachments/assets/e0c1c957-315e-409d-b508-6c7d8229addd)
+
+### Donor Listing Page
+![image](https://github.com/user-attachments/assets/ef61bb5f-a923-431a-988e-a94ae8c307a6)
+
+
+
+## Volunteer Page 
+
+### Volunteer Dashboard
+![image](https://github.com/user-attachments/assets/a086467c-349c-4f16-add5-de2973154d5c)
+
+### Volunteer Analytics
+![image](https://github.com/user-attachments/assets/acdf4484-f6cf-49bf-a692-8c27204e1aa6)
+
+### Volunteer Available - Food  
+![image](https://github.com/user-attachments/assets/08aeb87d-292d-4de4-af72-e25bbdcff0ba)
+
+### Map view of Listed Food
+![image](https://github.com/user-attachments/assets/ad9ccb89-20db-4cea-a26c-40dd65790b42)
+
+
+
 
 ## Installation
 
