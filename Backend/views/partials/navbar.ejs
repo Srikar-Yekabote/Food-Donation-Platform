@@ -1,0 +1,89 @@
+<nav class="bg-green-600 text-white shadow-lg">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+
+      <!-- Left Section: Logo -->
+      <div class="flex items-center">
+        <a href="/" class="text-2xl font-bold tracking-wide">SaveMyBite</a>
+      </div>
+
+      <!-- Center Links -->
+      <div class="hidden md:flex items-center space-x-6">
+        <% if (user && user.role === 'donor') { %>
+          <a href="/dashboard" class="hover:text-green-100">Dashboard</a>
+          <a href="/list-food" class="hover:text-green-100">List Food</a>
+          <a href="/available-food" class="hover:text-green-100">Available Food</a>
+          <a href="/donor-analytics" class="block hover:text-green-100">Analytics</a>
+        <% } else if (user && user.role === 'volunteer') { %>
+          <a href="/volunteer-dashboard" class="hover:text-green-100">Dashboard</a>
+          <a href="/volunteer-analytics" class="block hover:text-green-100">Analytics</a>
+          <a href="/available-food" class="hover:text-green-100">Available Food</a>
+          <a href="/pickup-location" class="hover:text-green-100">Map view</a>
+        <% } else { %>
+          <a href="/" class="hover:text-green-100">Home</a>
+          <a href="/available-food" class="hover:text-green-100">Available Food</a>
+        <% } %>
+      </div>
+
+      <!-- Right Section: Auth -->
+      <div class="flex items-center space-x-4">
+        <% if (!user) { %>
+          <a href="/login" class="bg-white text-green-600 px-3 py-1 rounded-md hover:bg-green-100">SignIn</a>
+          <a href="/register" class="bg-white text-green-600 px-3 py-1 rounded-md hover:bg-green-100">SignUp</a>
+        <% } else { %>
+          <%- console.log(user) %>
+          <span class="hidden sm:inline">Hello, <%= user.email%></span>
+          <a href="/logout" class="bg-white text-green-600 px-3 py-1 rounded-md hover:bg-green-100">Logout</a>
+        <% } %>
+      </div>
+
+      <!-- Mobile Menu Toggle -->
+      <div class="md:hidden flex items-center">
+        <button id="mobile-menu-btn">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 space-y-2">
+    <% if (user && user.role === 'donor') { %>
+      <a href="/dashboard" class="block hover:text-green-100">Dashboard</a>
+      <a href="/list-food" class="block hover:text-green-100">List Food</a>
+      <a href="/available-food" class="block hover:text-green-100">Available Food</a>
+      <a href="/donor-analytics" class="block hover:text-green-100">Analytics</a>
+      
+    <% } else if (user && user.role === 'volunteer') { %>
+      <a href="/volunteer-dashboard" class="block hover:text-green-100">Dashboard</a>
+      <a href="/volunteer-analytics" class="block hover:text-green-100">Analytics</a>
+      <a href="/available-food" class="block hover:text-green-100">Available Food</a>
+      <a href="/pickup-location" class="block hover:text-green-100">Map view</a>
+    <% } else { %>
+      <a href="/" class="block hover:text-green-100">Home</a>
+      <a href="/available-food" class="block hover:text-green-100">Available Food</a>
+    <% } %>
+
+    <% if (!user) { %>
+      <a href="/login" class="block hover:text-green-100">Sign In</a>
+      <a href="/register" class="block hover:text-green-100">Sign Up</a>
+    <% } else { %>
+      <a href="/logout" class="block hover:text-green-100">Logout</a>
+    <% } %>
+  </div>
+
+  <script>
+    // Toggle mobile menu
+    document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+      });
+    });
+  </script>
+</nav>

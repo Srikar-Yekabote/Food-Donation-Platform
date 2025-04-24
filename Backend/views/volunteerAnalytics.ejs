@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Volunteer Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+  <%- include("partials/navbar") %>
+  <div class="bg-gray-50 p-6">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold text-center text-green-700 mb-6">Volunteer Dashboard</h1>
+
+      <div class="mb-6 text-center">
+        <h2 class="text-xl text-gray-800">Welcome, <%= user.name %> 👋</h2>
+        <p class="text-gray-600">Here's your activity overview</p>
+      </div>
+
+      <% if (reward && couponCode) { %>
+        <div class="mt-8 p-5 bg-purple-100 border border-purple-400 rounded-lg shadow">
+          <h2 class="text-2xl font-semibold text-purple-800 mb-2">🏅 Congratulations!</h2>
+          <p class="text-gray-800">You’ve earned the <strong><%= reward %></strong> reward.</p>
+          <p class="text-gray-700 mt-1">Your Coupon Code:
+            <span class="bg-purple-300 px-3 py-1 rounded text-purple-900 font-bold"><%= couponCode %></span>
+          </p>
+      
+          <% if (redeemed) { %> 
+            <!-- If already redeemed, show a message -->
+            <p class="text-sm text-green-700 mt-2">You have already redeemed this reward. 🎉</p>
+          <% } else { %>
+            <!-- If not redeemed, show the Redeem button -->
+            <button
+              onclick='redeemNow(<%= delivered %>, "<%= couponCode %>")'
+              class="mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
+              🎁 Redeem Now
+            </button>
+            <p id="redeemMessage" class="text-sm mt-2 hidden"></p>
+          <% } %>
+        </div>
+      
+        <script>
+          async function redeemNow(milestone, couponCode) {
+            console.log("Redeeming with:", milestone, couponCode); // debug log
+      
+            try {
+              const res = await fetch('/redeem', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ milestone, couponCode })
+              });
+      
+              const data = await res.json();
+              const msgEl = document.getElementById('redeemMessage');
+      
+              msgEl.textContent = data.message;
+              msgEl.classList.remove('hidden');
+      
+              if (res.ok) {
+                msgEl.classList.add('text-green-700');
+                msgEl.classList.remove('text-red-600');
+              } else {
+                msgEl.classList.add('text-red-600');
+                msgEl.classList.remove('text-green-700');
+              }
+            } catch (error) {
+              console.error("Redeem error:", error);
+              const msgEl = document.getElementById('redeemMessage');
+              msgEl.textContent = "Something went wrong while redeeming.";
+              msgEl.classList.remove('hidden');
+              msgEl.classList.add('text-red-600');
+              msgEl.classList.remove('text-green-700');
+            }
+          }
+        </script>
+      <% } %>
+      
+
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 mt-4">
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-800">Total Pickups</h3>
+          <p class="text-3xl text-green-600 mt-2"><%= totalPicked %></p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-800">Delivered</h3>
+          <p class="text-3xl text-blue-600 mt-2"><%= delivered %></p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-800">Avg. Pickup Time</h3>
+          <p class="text-3xl text-yellow-600 mt-2"><%= averagePickupTime %> min</p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-800">Pending Pickups</h3>
+          <p class="text-3xl text-red-600 mt-2"><%= pendingPickups %></p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-gray-800">This Week</h3>
+          <p class="text-3xl text-indigo-600 mt-2"><%= weeklyPickups %></p>
+        </div>
+      </div>
+
+      <div class="bg-white shadow-lg rounded-2xl p-6 mt-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Weekly Goal Progress</h2>
+        <p class="text-gray-700 mb-2">Goal: <strong><%= goal %></strong> pickups this week</p>
+        <p class="text-gray-700 mb-4">You’ve completed <strong><%= weeklyPickups %></strong> so far!</p>
+        <div class="w-full bg-gray-300 rounded-full h-4">
+          <div
+            class="bg-green-500 h-4 rounded-full transition-all duration-300"
+            style="width: <%= Math.min((weeklyPickups / goal) * 100, 100) %>%;"
+          ></div>
+        </div>
+      </div>
+
+
+
+      <% if (delivered === 1) { %>
+        <!-- First Delivery Popup -->
+        <div id="firstDeliveryPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-md">
+            <h2 class="text-3xl font-bold text-green-700 mb-3">🎉 Hooray!</h2>
+            <p class="text-gray-800 mb-2">You've completed your very first delivery! 💚</p>
+            <p class="text-sm text-gray-600 mb-4">You're making a difference. Keep going!</p>
+            <button onclick="closePopup()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Awesome!</button>
+          </div>
+        </div>
+
+        <script>
+          function closePopup() {
+            document.getElementById('firstDeliveryPopup').style.display = 'none';
+          }
+
+          // Fire confetti when popup is shown
+          window.onload = function () {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+          };
+        </script>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Donor Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-200 text-gray-800 font-sans">
+
+  <%- include("partials/navbar") %>
+
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <h1 class="text-4xl font-extrabold text-center text-blue-700 mb-10">📊 Your Donation Analytics</h1>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-600">Total Donations</h2>
+        <p class="text-4xl font-bold text-blue-600 mt-2"><%= totalDonations %></p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-600">Picked Up</h2>
+        <p class="text-4xl font-bold text-green-600 mt-2"><%= pickedUp %></p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-600">Delivered</h2>
+        <p class="text-4xl font-bold text-purple-600 mt-2"><%= delivered %></p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-600">Donor Confirmed</h2>
+        <p class="text-4xl font-bold text-yellow-500 mt-2"><%= collected %></p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-lg font-semibold text-gray-600">Pending</h2>
+        <p class="text-4xl font-bold text-red-500 mt-2"><%= pending %></p>
+      </div>
+    </div>
+
+    <!-- Most Donated Items -->
+    <section class="bg-white rounded-2xl shadow-lg p-6">
+      <h2 class="text-2xl font-bold text-blue-700 mb-4">🥗 Most Donated Items</h2>
+
+      <% if (Object.keys(foodCountMap).length === 0) { %>
+        <p class="text-gray-500 italic">No food donations yet.</p>
+      <% } else { %>
+        <ul class="list-disc list-inside space-y-2">
+          <% for (let item in foodCountMap) { %>
+            <li class="text-lg capitalize text-gray-800"><%= item %>: <span class="font-bold text-blue-600"><%= foodCountMap[item] %></span></li>
+          <% } %>
+        </ul>
+      <% } %>
+    </section>
+  </main>
+</body>
+</html>

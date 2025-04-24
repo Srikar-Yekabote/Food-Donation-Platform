@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('./partials/head') %>
+  <title>Available Food Items</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .map {
+      height: 200px;
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 0.5rem;
+    }
+  </style>
+</head>
+<body >
+  <%- include("partials/navbar") %>
+
+<div class="bg-gradient-to-br from-gray-800 min-h-screen">
+  <div class="flex justify-center pt-10 px-4">
+    <div class="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-8">
+      <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-8">Available Food Donations</h1>
+
+      <% 
+        const sortedFoodItems = foodItems.sort((a, b) => {
+          const isPriorityA = a.priority || (new Date(a.expiryDate).toLocaleDateString() === new Date().toLocaleDateString());
+          const isPriorityB = b.priority || (new Date(b.expiryDate).toLocaleDateString() === new Date().toLocaleDateString());
+          return isPriorityB - isPriorityA; 
+        });
+      %>
+
+      <% if (sortedFoodItems.length === 0) { %>
+        <p class="text-center text-gray-600">No food items available at the moment.</p>
+      <% } else { %>
+        <div class="grid md:grid-cols-2 gap-6">
+        <% sortedFoodItems.forEach((food, index) => { %>
+          <div class="border border-gray-200 bg-gray-50 rounded-xl p-5 shadow hover:shadow-md transition duration-300">
+            <div class="mb-3">
+              <h2 class="text-lg font-bold text-blue-700"><%= food.name %></h2>
+              <% if (food.priority && user && user.role === 'volunteer') { %>
+                <span class="inline-block bg-red-200 text-red-800 text-xs font-semibold px-2 py-1 rounded-full mt-1">🚨 Priority Pickup</span>
+              <% } %>
+            </div>
+            <ul class="text-sm text-gray-700 space-y-1">
+              <li><strong>Quantity:</strong> <%= food.quantity %></li>
+              <li><strong>Expiry:</strong> <%= new Date(food.expiryDate).toLocaleDateString() %></li>
+              <li><strong>Address:</strong> <%= food.address %></li>
+              <li>
+                <strong>Status:</strong> 
+                <span class="font-semibold <%= 
+                  food.status === 'available' ? 'text-green-600' : 
+                  food.status === 'reserved' ? 'text-orange-500' : 
+                  'text-gray-500' %>">
+                  <%= food.status.charAt(0).toUpperCase() + food.status.slice(1) %>
+                </span>
+              </li>
+            </ul>
+
+            <div class="mt-4 flex flex-wrap gap-2">
+              <% if ((food.status === "available" || food.status === "reserved") && user && user.role === 'volunteer') { %>
+                <% if (food.reservedBy && String(food.reservedBy) === String(user.id)) { %>
+                  <form action="/cancel-pickup/<%= food._id %>" method="POST">
+                    <button class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded">Cancel Pickup</button>
+                  </form>
+                <% } else if (!food.reservedBy || food.status === "available") { %>
+                  <form action="/food/<%= food._id %>/reserve" method="POST">
+                    <button class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded">Pickup</button>
+                  </form>
+                <% } %>
+              <% } %>
+
+              <% if (food.status === "reserved" && user && user.role === 'donor' && String(user._id) === String(food.user)) { %>
+                <form action="/food/<%= food._id %>/deliver" method="POST">
+                  <button class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-2 rounded">Mark as Collected</button>
+                </form>
+              <% } %>
+
+              <% if (user && user.role === 'volunteer') { %>
+                <button 
+                  onclick="toggleMap(<%= index %>, this)"
+                  class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded">
+                  📍 Show Location
+                </button>
+              <% } %>
+            </div>
+
+            <div id="map-<%= index %>" class="map hidden"></div>
+            <p id="distance-<%= index %>" class="text-xs text-gray-600 mt-2 hidden"></p>
+          </div>
+        <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+  <script src="https://maps.googleapis.com/maps/api/js?key=<%= googleApiKey %>"></script>
+  <script>
+    const foodItems = <%- JSON.stringify(foodItems) %>;
+    const mapInitialized = {};
+
+    function getCurrentLocation(callback) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          callback(position.coords.latitude, position.coords.longitude);
+        }, function(error) {
+          alert("Error getting your location. Please try again.");
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function toggleMap(index, btn) {
+      const mapContainer = document.getElementById(`map-${index}`);
+      const distanceElement = document.getElementById(`distance-${index}`);
+      mapContainer.classList.toggle('hidden');
+      distanceElement.classList.toggle('hidden');
+
+      btn.textContent = mapContainer.classList.contains('hidden') ? "📍 Show Location" : "❌ Hide Location";
+
+      if (mapInitialized[index]) return;
+
+      setTimeout(() => {
+        const food = foodItems[index];
+        const [lng, lat] = food.location.coordinates;
+
+        const map = new google.maps.Map(mapContainer, {
+          center: { lat, lng },
+          zoom: 15
+        });
+
+        new google.maps.Marker({
+          position: { lat, lng },
+          map,
+          title: food.name
+        });
+
+        getCurrentLocation((volLat, volLng) => {
+          new google.maps.Marker({
+            position: { lat: volLat, lng: volLng },
+            map,
+            title: "Your Location",
+            icon: { url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }
+          });
+
+          const directionsService = new google.maps.DirectionsService();
+          directionsService.route({
+            origin: { lat: volLat, lng: volLng },
+            destination: { lat, lng },
+            travelMode: google.maps.TravelMode.DRIVING
+          }, function(response, status) {
+            if (status === 'OK') {
+              new google.maps.DirectionsRenderer({ map, suppressMarkers: true }).setDirections(response);
+              distanceElement.textContent = `Distance: ${response.routes[0].legs[0].distance.text}`;
+            } else {
+              distanceElement.textContent = "Unable to calculate distance.";
+            }
+          });
+
+          new google.maps.Polyline({
+            path: [{ lat: volLat, lng: volLng }, { lat, lng }],
+            geodesic: true,
+            strokeColor: "#6366F1",
+            strokeOpacity: 0.5,
+            strokeWeight: 2
+          }).setMap(map);
+
+          mapInitialized[index] = true;
+        });
+      }, 100);
+    }
+  </script>
+</body>
+</html>

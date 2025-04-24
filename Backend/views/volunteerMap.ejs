@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nearby Pickups</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    #map { height: 85vh; width: 100%; }
+  </style>
+</head>
+<body>
+  <%- include("partials/navbar") %>
+  <h1 style="text-align: center">Nearby Food Pickups</h1>
+  <div id="map"></div>
+
+  <script>
+    let map, volunteerLocation, directionsService, directionsRenderer;
+
+    function initMap() {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        volunteerLocation = new google.maps.LatLng(lat, lng);
+
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: volunteerLocation,
+          zoom: 14,
+        },(err)=>{
+          alert("Geolocation failed:" + err.message);
+        });
+
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({ map });
+
+        // Volunteer marker
+        new google.maps.Marker({
+          position: volunteerLocation,
+          map,
+          label: "You",
+        });
+
+        drawCircle(volunteerLocation, 1000, "#4CAF50"); 
+        drawCircle(volunteerLocation, 3000, "#FFC107"); 
+        drawCircle(volunteerLocation, 5000, "#F44336"); 
+
+        const foodData = <%- JSON.stringify(availableFood|| []) %>;
+        const reservedFood = <%- JSON.stringify(reservedFood || null) %>;
+        if (reservedFood) {
+          const destination = {
+            lat: reservedFood.location.coordinates[1],
+            lng: reservedFood.location.coordinates[0]
+          };
+
+          const reservedMarker = new google.maps.Marker({
+            position: destination,
+            map,
+            title: reservedFood.name,
+            label: "Pickup"
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<b>${reservedFood.name}</b><br>Qty: ${reservedFood.quantity}<br>Address: ${reservedFood.address}`
+          });
+
+          infoWindow.open(map, reservedMarker);
+
+          directionsService.route({
+            origin: volunteerLocation,
+            destination: destination,
+            travelMode: "DRIVING",
+          }, (result, status) => {
+            if (status === "OK") {
+              directionsRenderer.setDirections(result);
+            } else {
+              alert("Auto-routing failed: " + status);
+            }
+          });
+        }
+
+        foodData.forEach(item => {
+          const donorLoc = {
+            lat: item.location.coordinates[1],
+            lng: item.location.coordinates[0],
+          };
+
+          const marker = new google.maps.Marker({
+            position: donorLoc,
+            map,
+            title: item.name,
+          });
+
+          const infoWindow = new google.maps.InfoWindow({
+            content: `<b>${item.name}</b><br>Qty: ${item.quantity}<br>Address: ${item.address}`
+          });
+
+          marker.addListener("click", () => {
+            infoWindow.open(map, marker);
+            directionsService.route({
+              origin: volunteerLocation,
+              destination: donorLoc,
+              travelMode: "DRIVING",
+            }, (result, status) => {
+              if (status === "OK") {
+                directionsRenderer.setDirections(result);
+              } else {
+                alert("Routing failed: " + status);
+              }
+            });
+          });
+        });
+      });
+    }
+
+    function drawCircle(center, radius, color) {
+      new google.maps.Circle({
+        strokeColor: color,
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: color,
+        fillOpacity: 0.15,
+        map: map,
+        center: center,
+        radius: radius,
+      });
+    }
+  </script>
+
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=<%= googleApiKey %>&callback=initMap">
+  </script>
+</body>
+</html>
