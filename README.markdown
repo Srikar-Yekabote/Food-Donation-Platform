@@ -145,11 +145,3 @@ The AI-Powered Food Donation & Redistribution Platform is a web-based solution d
 ## Contributing
 
 Contributions are welcome! Fork the repository and submit a pull request with your changes.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
-## Contact
-
-For inquiries or feedback, reach out at email@example.com.
